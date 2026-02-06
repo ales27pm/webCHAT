@@ -1,0 +1,5 @@
+{
+  "name": "LocalMind - On-Device AI",
+  "description": "A secure, privacy-focused chat application running entirely in your browser using WebGPU and WebLLM. No data leaves your device.",
+  "requestFramePermissions": []
+}
