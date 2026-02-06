@@ -1,7 +1,6 @@
 import React from 'react';
-import { Cpu, HardDrive, Zap, Info, ShieldCheck, Database, Settings } from 'lucide-react';
+import { Cpu, HardDrive, Zap, ShieldCheck, Database, Trash2, BrainCircuit } from 'lucide-react';
 import { AVAILABLE_MODELS } from '../constants';
-import { Button } from './ui/Button';
 
 interface SidebarProps {
   selectedModel: string;
@@ -9,6 +8,10 @@ interface SidebarProps {
   isModelLoading: boolean;
   isOpen: boolean;
   onClose: () => void;
+  isMemoryEnabled: boolean;
+  onToggleMemory: () => void;
+  onClearMemory: () => void;
+  memoryStatus: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ 
@@ -16,10 +19,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onModelSelect, 
   isModelLoading,
   isOpen,
-  onClose
+  onClose,
+  isMemoryEnabled,
+  onToggleMemory,
+  onClearMemory,
+  memoryStatus
 }) => {
-  const currentModel = AVAILABLE_MODELS.find(m => m.id === selectedModel);
-
   return (
     <>
       {/* Mobile overlay */}
@@ -48,8 +53,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-          <div className="mb-8">
+        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-8">
+          
+          {/* Models Section */}
+          <div>
             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4 px-2">
               Select Model
             </h3>
@@ -96,6 +103,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
+          {/* Memory Section */}
+          <div>
+             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4 px-2">
+              Semantic Memory
+            </h3>
+            <div className="bg-zinc-800/40 border border-zinc-700/50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BrainCircuit size={16} className={isMemoryEnabled ? "text-purple-400" : "text-zinc-500"} />
+                  <span className="text-sm font-medium text-zinc-200">Long-term Memory</span>
+                </div>
+                <button 
+                  onClick={onToggleMemory}
+                  className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${isMemoryEnabled ? 'bg-purple-600' : 'bg-zinc-700'}`}
+                >
+                  <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-transform duration-200 ${isMemoryEnabled ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+              
+              <p className="text-xs text-zinc-500 mb-3">
+                Allows the AI to remember past conversations using a vector database.
+              </p>
+
+              {memoryStatus !== 'ready' && isMemoryEnabled && (
+                <div className="text-xs text-purple-400 mb-2 animate-pulse">
+                  {memoryStatus === 'loading' ? 'Loading embedding model...' : 
+                   memoryStatus === 'indexing' ? 'Saving memory...' : 
+                   memoryStatus === 'searching' ? 'Recalling...' : ''}
+                </div>
+              )}
+
+              <button 
+                onClick={onClearMemory}
+                className="w-full flex items-center justify-center gap-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/20 py-2 rounded border border-transparent hover:border-red-900/30 transition-colors"
+              >
+                <Trash2 size={12} />
+                Clear Memory DB
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-1">
              <div className="p-4 rounded-lg bg-emerald-900/10 border border-emerald-500/20">
                 <div className="flex items-start gap-3">
@@ -103,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div>
                     <h4 className="text-sm font-medium text-emerald-400 mb-1">Privacy First</h4>
                     <p className="text-xs text-emerald-300/80 leading-relaxed">
-                      Your chats are processed locally on your device's GPU. No data is ever sent to a remote server.
+                      Your chats AND semantic memory vectors are processed locally on your device. No data leaves your browser.
                     </p>
                   </div>
                 </div>

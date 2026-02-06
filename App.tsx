@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { webLlmService } from './services/webLlmService';
+import { memoryService } from './services/memoryService';
 import { AVAILABLE_MODELS, DEFAULT_SYSTEM_PROMPT } from './constants';
 import { Message, AppState } from './types';
 import { Sidebar } from './components/Sidebar';
@@ -17,19 +18,32 @@ const App: React.FC = () => {
     loadingProgressValue: 0,
     selectedModel: AVAILABLE_MODELS[0].id,
     error: null,
+    isMemoryEnabled: true,
+    memoryStatus: 'idle'
   });
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isGPUAvailable, setIsGPUAvailable] = useState<boolean | null>(null);
 
-  // Initialize GPU check
+  // Initialize services
   useEffect(() => {
     webLlmService.isGPUAvailable().then(available => {
       setIsGPUAvailable(available);
       if (!available) {
-        setState(s => ({ ...s, error: "WebGPU is not available in your browser. Please use Chrome, Edge, or a supported browser." }));
+        setState(s => ({ ...s, error: "WebGPU is not available. Please use Chrome/Edge." }));
       }
     });
+
+    // Initialize memory service silently
+    if (state.isMemoryEnabled) {
+      setState(s => ({ ...s, memoryStatus: 'loading' }));
+      memoryService.init().then(() => {
+        setState(s => ({ ...s, memoryStatus: 'ready' }));
+      }).catch(err => {
+        console.error("Memory init failed", err);
+        setState(s => ({ ...s, memoryStatus: 'idle', isMemoryEnabled: false }));
+      });
+    }
   }, []);
 
   // Handle Model Selection & Loading
@@ -40,7 +54,7 @@ const App: React.FC = () => {
       ...prev,
       selectedModel: modelId,
       isModelLoading: true,
-      loadingProgress: 'Initializing...',
+      loadingProgress: 'Initializing Model...',
       loadingProgressValue: 0,
       error: null
     }));
@@ -70,30 +84,30 @@ const App: React.FC = () => {
     }
   };
 
-  // Initial model load trigger
-  useEffect(() => {
-    if (isGPUAvailable) {
-        // Automatically load the first model on start if we want, or wait for user. 
-        // Let's wait for user to interact or auto-load if desired. 
-        // For better UX, we can just let them click, but let's auto-load the smallest efficient one to show capability?
-        // Actually, large downloads without consent are bad UX. Let's wait for first message or explicit selection if we hadn't selected one.
-        // However, the `Sidebar` selects the first one by default visually. Let's trigger load if user explicitly initiates or we can prompt a "Click to Load" button overlay.
-        // For this demo, let's load immediately to be impressive, but maybe the smaller one? 
-        // Let's just stick to user initiation logic: If they type, we load.
-        // Or better: Load on mount? No, bandwidth.
-        // We will just let the state sit there. 
-    }
-  }, [isGPUAvailable]);
-
   const handleSend = async (content: string) => {
-    // If not loaded, load first
+    // 1. Ensure Model is Loaded
     if (state.loadingProgressValue !== 1 && !state.isModelLoading) {
        await loadModel(state.selectedModel);
     }
-    
-    // Safety check if load failed
     if (state.error) return;
 
+    // 2. Prepare Context (RAG)
+    let systemMessage = DEFAULT_SYSTEM_PROMPT;
+    
+    if (state.isMemoryEnabled) {
+      setState(s => ({ ...s, memoryStatus: 'searching' }));
+      try {
+        const context = await memoryService.retrieveContext(content);
+        if (context) {
+          systemMessage += `\n\n${context}\nInstructions: Use the RELEVANT CONTEXT above to answer the user's question if applicable.`;
+        }
+      } catch (e) {
+        console.error("Context retrieval failed", e);
+      }
+      setState(s => ({ ...s, memoryStatus: 'ready' }));
+    }
+
+    // 3. Update UI with User Message
     const newMessage: Message = {
       role: 'user',
       content,
@@ -109,11 +123,10 @@ const App: React.FC = () => {
       isLoading: true
     }));
 
+    // 4. Stream Response
     const botMessageId = (Date.now() + 1).toString();
-    // Placeholder for bot message
-    let botContent = "";
+    let fullBotResponse = "";
     
-    // Optimistic update for bot message
     setState(prev => ({
       ...prev,
       messages: [
@@ -123,23 +136,33 @@ const App: React.FC = () => {
     }));
 
     await webLlmService.streamCompletion(
-      // Prepend system prompt if it's the start of convo
-      updatedMessages.length === 1 
-        ? [{ role: 'system', content: DEFAULT_SYSTEM_PROMPT, id: 'sys', timestamp: 0 }, ...updatedMessages]
-        : updatedMessages,
+      [
+        { role: 'system', content: systemMessage, id: 'sys', timestamp: 0 }, 
+        ...updatedMessages
+      ],
       (delta) => {
-        botContent += delta;
+        fullBotResponse += delta;
         setState(prev => ({
           ...prev,
           messages: prev.messages.map(msg => 
             msg.id === botMessageId 
-              ? { ...msg, content: botContent }
+              ? { ...msg, content: fullBotResponse }
               : msg
           )
         }));
       },
-      () => {
+      async () => {
         setState(prev => ({ ...prev, isLoading: false }));
+        
+        // 5. Save to Memory (Index)
+        if (state.isMemoryEnabled && fullBotResponse) {
+          setState(s => ({ ...s, memoryStatus: 'indexing' }));
+          // Index user query
+          await memoryService.addMemory(content, 'user');
+          // Index assistant response
+          await memoryService.addMemory(fullBotResponse, 'assistant');
+          setState(s => ({ ...s, memoryStatus: 'ready' }));
+        }
       },
       (err) => {
         setState(prev => ({ 
@@ -152,12 +175,24 @@ const App: React.FC = () => {
   };
 
   const handleModelSelect = async (id: string) => {
-      // If we switch models, we clear chat for consistency usually, or keep history if context allows.
-      // WebLLM engine unload clears context.
       if (state.selectedModel === id) return;
-      
       setState(prev => ({ ...prev, messages: [], selectedModel: id }));
       await loadModel(id);
+  };
+
+  const handleToggleMemory = () => {
+    const newVal = !state.isMemoryEnabled;
+    setState(prev => ({ ...prev, isMemoryEnabled: newVal }));
+    if (newVal) {
+      memoryService.init();
+    }
+  };
+
+  const handleClearMemory = async () => {
+    if (confirm("Are you sure you want to clear the entire memory database? This cannot be undone.")) {
+      await memoryService.clearMemory();
+      alert("Memory database cleared.");
+    }
   };
 
   return (
@@ -169,6 +204,10 @@ const App: React.FC = () => {
         isModelLoading={state.isModelLoading}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        isMemoryEnabled={state.isMemoryEnabled}
+        onToggleMemory={handleToggleMemory}
+        onClearMemory={handleClearMemory}
+        memoryStatus={state.memoryStatus}
       />
 
       <div className="flex-1 flex flex-col h-full relative w-full">
@@ -212,7 +251,12 @@ const App: React.FC = () => {
           onSend={handleSend}
           isLoading={state.isLoading}
           disabled={state.isModelLoading || !isGPUAvailable}
-          placeholder={state.messages.length === 0 ? "Send a message to load the model..." : "Type a message..."}
+          placeholder={
+            state.isLoading ? "Generating..." :
+            state.memoryStatus === 'searching' ? "Recalling memory..." :
+            state.memoryStatus === 'indexing' ? "Memorizing..." :
+            "Type a message..."
+          }
         />
       </div>
     </div>

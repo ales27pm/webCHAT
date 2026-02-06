@@ -1,3 +1,4 @@
+
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -13,6 +14,8 @@ export interface AppState {
   loadingProgressValue: number; // 0 to 1
   selectedModel: string;
   error: string | null;
+  isMemoryEnabled: boolean;
+  memoryStatus: 'idle' | 'loading' | 'indexing' | 'searching' | 'ready';
 }
 
 export interface ModelConfig {
@@ -27,4 +30,18 @@ export interface InitProgressReport {
   progress: number;
   text: string;
   timeElapsed: number;
+}
+
+export interface VectorDocument {
+  id: string;
+  content: string;
+  embedding: number[];
+  metadata: {
+    role: 'user' | 'assistant';
+    timestamp: number;
+  };
+}
+
+export interface SearchResult extends VectorDocument {
+  score: number;
 }
