@@ -1,4 +1,4 @@
-import { CreateMLCEngine, MLCEngine, InitProgressCallback } from "@mlc-ai/web-llm";
+import { CreateMLCEngine, MLCEngine, InitProgressCallback, prebuiltAppConfig } from "@mlc-ai/web-llm";
 import { Message } from "../types";
 
 // Singleton instance to prevent multiple engines being created in development hot-reloads
@@ -27,10 +27,13 @@ export class WebLlmService {
         await engineInstance.unload();
       }
 
+      // We use prebuiltAppConfig to ensure we have the latest model definitions and URLs
+      // directly from the library's repository configuration.
       engineInstance = await CreateMLCEngine(
         modelId,
         { 
           initProgressCallback: progressCallback,
+          appConfig: prebuiltAppConfig,
           logLevel: "INFO" 
         }
       );

@@ -1,5 +1,7 @@
 import { ModelConfig } from './types';
 
+// We manually curate this list to ensure good UX (descriptions, size estimates),
+// but the IDs MUST match those in @mlc-ai/web-llm's prebuiltAppConfig.
 export const AVAILABLE_MODELS: ModelConfig[] = [
   {
     id: "Llama-3.2-1B-Instruct-q4f16_1-MLC",
