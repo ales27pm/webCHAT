@@ -73,10 +73,18 @@ export class WebLlmService {
 
       for await (const chunk of chunks) {
         if (abortSignal?.aborted) {
-          break;
+          const abortError = new DOMException('Generation aborted', 'AbortError');
+          onError(abortError);
+          return;
         }
         const delta = chunk.choices[0]?.delta.content || '';
         onUpdate(delta);
+      }
+
+      if (abortSignal?.aborted) {
+        const abortError = new DOMException('Generation aborted', 'AbortError');
+        onError(abortError);
+        return;
       }
 
       onFinish();

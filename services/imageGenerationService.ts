@@ -23,7 +23,8 @@ class ImageGenerationService {
   }
 
   private loadScript(id: string, src: string) {
-    if (document.getElementById(id)) {
+    const existing = document.getElementById(id);
+    if (existing) {
       return Promise.resolve();
     }
 
@@ -34,7 +35,10 @@ class ImageGenerationService {
       script.async = true;
       script.crossOrigin = 'anonymous';
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      script.onerror = () => {
+        script.remove();
+        reject(new Error(`Failed to load script: ${src}`));
+      };
       document.body.appendChild(script);
     });
   }
@@ -82,8 +86,11 @@ class ImageGenerationService {
   }
 
   public async generate() {
-    if (!window.tvmjsGlobalEnv?.asyncOnGenerate) {
-      throw new Error('Image generation is not ready yet.');
+    if (this.status === 'idle') {
+      await this.initialize();
+    }
+    if (this.status !== 'ready' || !window.tvmjsGlobalEnv?.asyncOnGenerate) {
+      throw new Error('Image generation is not ready. Please wait for initialization.');
     }
     await window.tvmjsGlobalEnv.asyncOnGenerate();
   }
