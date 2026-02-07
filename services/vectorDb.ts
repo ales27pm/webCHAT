@@ -25,7 +25,7 @@ export class VectorDb {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onerror = () => reject(request.error);
-      
+
       request.onsuccess = () => {
         this.db = request.result;
         resolve();
@@ -46,7 +46,7 @@ export class VectorDb {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.put(doc);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -54,7 +54,7 @@ export class VectorDb {
 
   public async search(queryEmbedding: number[], topK: number = 3): Promise<SearchResult[]> {
     if (!this.db) await this.init();
-    
+
     // For small-medium datasets (<10k), a full scan in JS is fast enough.
     // For larger, we'd need an IVF index or similar, but keeping it simple for "on-device".
     return new Promise((resolve, reject) => {
@@ -63,17 +63,17 @@ export class VectorDb {
       const request = store.getAll();
 
       request.onerror = () => reject(request.error);
-      
+
       request.onsuccess = () => {
         const docs = request.result as VectorDocument[];
         const results: SearchResult[] = docs
-          .map(doc => ({
+          .map((doc) => ({
             ...doc,
             score: cosineSimilarity(queryEmbedding, doc.embedding)
           }))
           .sort((a, b) => b.score - a.score)
           .slice(0, topK);
-        
+
         resolve(results);
       };
     });
@@ -85,7 +85,7 @@ export class VectorDb {
       const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.clear();
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve();
     });
@@ -97,7 +97,7 @@ export class VectorDb {
       const transaction = this.db!.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.count();
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });

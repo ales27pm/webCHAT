@@ -10,11 +10,19 @@ View your app in AI Studio: https://ai.studio/apps/drive/1CZpSJjfljYpLZnBU_zdNlc
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
-
+**Prerequisites:** Node.js
 
 1. Install dependencies:
    `npm install`
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## On-device image generation (Web Stable Diffusion)
+
+This project includes a new image generation view powered by [web-stable-diffusion](https://github.com/mlc-ai/web-stable-diffusion). The demo loads WebGPU runtime assets directly from `https://websd.mlc.ai` and uses the configuration in `public/stable-diffusion-config.json`.
+
+**Notes**
+
+- The first generation downloads model weights (~7GB) and can take several minutes. Subsequent runs are faster due to caching.
+- WebGPU support is required (Chrome/Edge recommended).
