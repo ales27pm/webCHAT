@@ -1,17 +1,20 @@
 import React from 'react';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react';
+import { jest } from '@jest/globals';
 import { ImageGeneration } from '../components/ImageGeneration';
 import { imageGenerationService } from '../services/imageGenerationService';
 
-jest.mock('../services/imageGenerationService', () => ({
-  imageGenerationService: {
-    getStatus: jest.fn(() => 'ready'),
-    initialize: jest.fn(() => Promise.resolve()),
-    generate: jest.fn(() => Promise.resolve())
-  }
-}));
-
 describe('ImageGeneration', () => {
+  beforeEach(() => {
+    jest.spyOn(imageGenerationService, 'getStatus').mockReturnValue('ready');
+    jest.spyOn(imageGenerationService, 'initialize').mockResolvedValue();
+    jest.spyOn(imageGenerationService, 'generate').mockResolvedValue();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('renders the image generation form and triggers generate', async () => {
     render(<ImageGeneration isGPUAvailable={true} />);
 
