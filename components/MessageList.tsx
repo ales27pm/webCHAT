@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Message } from '../types';
-import { Bot, User, Copy, Check } from 'lucide-react';
+import { Bot, User, Copy } from 'lucide-react';
 
 interface MessageListProps {
   messages: Message[];
@@ -37,14 +37,15 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isStreaming 
           </div>
           <h2 className="text-xl font-semibold text-zinc-300">Ready to Chat Locally</h2>
           <p className="max-w-md text-center text-sm">
-            Select a model from the sidebar to begin. All processing happens securely on your device. No data is sent to any server.
+            Select a model from the sidebar to begin. All processing happens securely on your
+            device. No data is sent to any server.
           </p>
         </div>
       )}
 
-      {messages.map((msg, index) => (
-        <div 
-          key={msg.id} 
+      {messages.map((msg) => (
+        <div
+          key={msg.id}
           className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
         >
           {msg.role === 'assistant' && (
@@ -52,12 +53,14 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isStreaming 
               <Bot size={16} className="text-blue-400" />
             </div>
           )}
-          
-          <div className={`relative group max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-3.5 ${
-            msg.role === 'user' 
-              ? 'bg-blue-600 text-white rounded-br-none' 
-              : 'bg-zinc-800/80 text-zinc-100 rounded-bl-none border border-zinc-700/50'
-          }`}>
+
+          <div
+            className={`relative group max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-3.5 ${
+              msg.role === 'user'
+                ? 'bg-blue-600 text-white rounded-br-none'
+                : 'bg-zinc-800/80 text-zinc-100 rounded-bl-none border border-zinc-700/50'
+            }`}
+          >
             <div className="markdown-body text-sm leading-relaxed break-words">
               {msg.role === 'user' ? (
                 <p>{msg.content}</p>
@@ -65,16 +68,16 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isStreaming 
                 <ReactMarkdown>{msg.content}</ReactMarkdown>
               )}
             </div>
-            
+
             {msg.role === 'assistant' && (
-               <button 
-               id={`copy-btn-${msg.id}`}
-               onClick={() => copyToClipboard(msg.content, msg.id)}
-               className="absolute -bottom-6 left-0 text-zinc-500 hover:text-zinc-300 transition-colors p-1 opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs"
-               title="Copy to clipboard"
-             >
-               <Copy size={12} /> Copy
-             </button>
+              <button
+                id={`copy-btn-${msg.id}`}
+                onClick={() => copyToClipboard(msg.content, msg.id)}
+                className="absolute -bottom-6 left-0 text-zinc-500 hover:text-zinc-300 transition-colors p-1 opacity-0 group-hover:opacity-100 flex items-center gap-1 text-xs"
+                title="Copy to clipboard"
+              >
+                <Copy size={12} /> Copy
+              </button>
             )}
           </div>
 

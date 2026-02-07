@@ -23,7 +23,7 @@ class MemoryService {
 
   public async init(): Promise<void> {
     if (this.isInitialized) return;
-    
+
     try {
       // Initialize DB
       await vectorDb.init();
@@ -41,7 +41,7 @@ class MemoryService {
 
   private async getEmbedding(text: string): Promise<number[]> {
     if (!this.pipe) await this.init();
-    
+
     // Generate embedding
     const output = await this.pipe(text, { pooling: 'mean', normalize: true });
     // Convert Float32Array to regular array
@@ -62,7 +62,7 @@ class MemoryService {
       };
       await vectorDb.addDocument(doc);
     } catch (e) {
-      console.error("Error adding memory:", e);
+      console.error('Error adding memory:', e);
     }
   }
 
@@ -70,20 +70,23 @@ class MemoryService {
     try {
       const embedding = await this.getEmbedding(query);
       const results = await vectorDb.search(embedding, 3);
-      
-      // Filter for relevance (score > 0.4 is a decent baseline for MiniLM)
-      const relevant = results.filter(r => r.score > 0.35);
 
-      if (relevant.length === 0) return "";
+      // Filter for relevance (score > 0.4 is a decent baseline for MiniLM)
+      const relevant = results.filter((r) => r.score > 0.35);
+
+      if (relevant.length === 0) return '';
 
       const contextString = relevant
-        .map(r => `[${new Date(r.metadata.timestamp).toLocaleDateString()}] ${r.metadata.role.toUpperCase()}: ${r.content}`)
+        .map(
+          (r) =>
+            `[${new Date(r.metadata.timestamp).toLocaleDateString()}] ${r.metadata.role.toUpperCase()}: ${r.content}`
+        )
         .join('\n\n');
 
       return `\nRELEVANT CONTEXT FROM PAST CONVERSATIONS:\n${contextString}\n\n`;
     } catch (e) {
-      console.error("Error retrieving context:", e);
-      return "";
+      console.error('Error retrieving context:', e);
+      return '';
     }
   }
 

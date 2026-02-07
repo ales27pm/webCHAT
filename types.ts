@@ -1,4 +1,3 @@
-
 export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -15,7 +14,7 @@ export interface AppState {
   selectedModel: string;
   error: string | null;
   isMemoryEnabled: boolean;
-  memoryStatus: 'idle' | 'loading' | 'indexing' | 'searching' | 'ready';
+  memoryStatus: 'idle' | 'loading' | 'indexing' | 'searching' | 'ready' | 'error';
 }
 
 export interface ModelConfig {
