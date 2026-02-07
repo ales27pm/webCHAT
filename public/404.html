@@ -3,11 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="base-path" content="/webCHAT/" />
     <title>Redirecting...</title>
     <script>
       const pathSegments = window.location.pathname.split('/').filter(Boolean);
       const isGithubPages = window.location.hostname.endsWith('github.io');
-      const basePath = isGithubPages && pathSegments.length > 0 ? `/${pathSegments[0]}/` : '/';
+      const metaBasePath = document
+        .querySelector('meta[name="base-path"]')
+        ?.getAttribute('content');
+      const basePath =
+        metaBasePath || (isGithubPages && pathSegments.length > 0 ? `/${pathSegments[0]}/` : '/');
       const redirectPath = window.location.pathname + window.location.search + window.location.hash;
       sessionStorage.setItem('redirect', redirectPath);
       window.location.replace(basePath);

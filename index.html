@@ -38,9 +38,16 @@
           return;
         }
 
-        const redirect = sessionStorage.getItem('redirect');
+        let redirect = null;
+        try {
+          redirect = sessionStorage.getItem('redirect');
+          if (redirect) {
+            sessionStorage.removeItem('redirect');
+          }
+        } catch (error) {
+          console.warn('Unable to access sessionStorage for redirect recovery.', error);
+        }
         if (!redirect) return;
-        sessionStorage.removeItem('redirect');
         const url = new URL(redirect, window.location.origin);
         const current = new URL(window.location.href);
         if (url.pathname !== current.pathname || url.search !== current.search) {
