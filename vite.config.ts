@@ -1,21 +1,26 @@
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  server: {
-    port: 5000,
-    host: '0.0.0.0',
-    allowedHosts: true,
-    hmr: {
-      clientPort: 443
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const base = env.VITE_BASE_PATH || (mode === 'production' ? '/webCHAT/' : '/');
+
+  return {
+    server: {
+      port: 5000,
+      host: '0.0.0.0',
+      allowedHosts: true,
+      hmr: {
+        clientPort: 443
+      }
+    },
+    base,
+    plugins: [react()],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, '.')
+      }
     }
-  },
-  base: '/webCHAT/',
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, '.')
-    }
-  }
+  };
 });
