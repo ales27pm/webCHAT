@@ -5,9 +5,10 @@ export default {
     './index.html',
     './index.tsx',
     './App.tsx',
-    './components/**/*.{ts,tsx}',
-    './services/**/*.{ts,tsx}',
-    './tests/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx,js,jsx}',
+    './services/**/*.{ts,tsx,js,jsx}',
+    './tests/**/*.{ts,tsx,js,jsx}',
+    './public/**/*.{ts,tsx,js,jsx}',
     './constants.ts',
     './types.ts'
   ],

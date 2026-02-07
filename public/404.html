@@ -12,10 +12,16 @@
         .querySelector('meta[name="base-path"]')
         ?.getAttribute('content');
       const basePath =
-        metaBasePath || (isGithubPages && pathSegments.length > 0 ? `/${pathSegments[0]}/` : '/');
-      const redirectPath = window.location.pathname + window.location.search + window.location.hash;
-      sessionStorage.setItem('redirect', redirectPath);
-      window.location.replace(basePath);
+        metaBasePath || (isGithubPages && pathSegments.length > 1 ? `/${pathSegments[0]}/` : '/');
+      try {
+        const redirectPath =
+          window.location.pathname + window.location.search + window.location.hash;
+        sessionStorage.setItem('redirect', redirectPath);
+      } catch (error) {
+        console.warn('Unable to access sessionStorage for redirect recovery.', error);
+      } finally {
+        window.location.replace(basePath);
+      }
     </script>
   </head>
   <body>
