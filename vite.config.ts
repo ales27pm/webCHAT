@@ -11,7 +11,7 @@ export default defineConfig({
       clientPort: 443
     }
   },
-  base: '/',
+  base: '/webCHAT/',
   plugins: [react()],
   resolve: {
     alias: {

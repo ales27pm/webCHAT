@@ -57,9 +57,7 @@ class ImageGenerationService {
       }
       const response = await fetch(`https://huggingface.co/${name}/raw/main/tokenizer.json`);
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch tokenizer "${name}" (status ${response.status}).`
-        );
+        throw new Error(`Failed to fetch tokenizer "${name}" (status ${response.status}).`);
       }
       const jsonText = await response.text();
       return new tokenizerModule.TokenizerWasm(jsonText);
