@@ -11,8 +11,9 @@
       const metaBasePath = document
         .querySelector('meta[name="base-path"]')
         ?.getAttribute('content');
-      const basePath =
-        metaBasePath || (isGithubPages && pathSegments.length > 1 ? `/${pathSegments[0]}/` : '/');
+      const basePath = isGithubPages
+        ? metaBasePath || (pathSegments.length > 1 ? `/${pathSegments[0]}/` : '/')
+        : '/';
       try {
         const redirectPath =
           window.location.pathname + window.location.search + window.location.hash;
