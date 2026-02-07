@@ -24,4 +24,5 @@ A React-based on-device AI application that runs AI models directly in the brows
 - Deployment: Static site (dist/ directory)
 
 ## Recent Changes
-- 2026-02-07: Initial Replit setup - configured Vite for port 5000 with allowedHosts
+- 2026-02-07: Fixed display issues by defining `zinc` colors in Tailwind configuration and ensuring `root` element fills the viewport.
+- 2026-02-07: Configured Vite for Replit (port 5000, allowedHosts, HMR clientPort).
