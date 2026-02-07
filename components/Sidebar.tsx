@@ -122,6 +122,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
                 <button
                   onClick={onToggleMemory}
+                  role="switch"
+                  aria-checked={isMemoryEnabled}
+                  aria-label="Toggle long-term memory"
                   className={`w-10 h-5 rounded-full relative transition-colors duration-200 ${isMemoryEnabled ? 'bg-purple-600' : 'bg-zinc-700'}`}
                 >
                   <div

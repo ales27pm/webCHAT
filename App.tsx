@@ -301,7 +301,7 @@ const App: React.FC = () => {
               onSend={handleSend}
               onStop={handleStop}
               isLoading={state.isLoading}
-              disabled={state.isModelLoading || !isGPUAvailable}
+              disabled={state.isModelLoading || isGPUAvailable === false}
               placeholder={
                 state.isLoading
                   ? 'Generating...'
@@ -315,7 +315,11 @@ const App: React.FC = () => {
           </>
         ) : (
           <div className="flex-1 overflow-y-auto">
-            <ImageGeneration isGPUAvailable={isGPUAvailable} />
+            {isGPUAvailable === null ? (
+              <div className="p-6 text-sm text-zinc-400">Checking WebGPU support...</div>
+            ) : (
+              <ImageGeneration isGPUAvailable={isGPUAvailable} />
+            )}
           </div>
         )}
       </div>

@@ -3,12 +3,12 @@ import { imageGenerationService } from '../services/imageGenerationService';
 import { Button } from './ui/Button';
 
 interface ImageGenerationProps {
-  isGPUAvailable: boolean | null;
+  isGPUAvailable: boolean;
 }
 
 interface ImageGenerationControlsProps {
   status: string;
-  isGPUAvailable: boolean | null;
+  isGPUAvailable: boolean;
   isGenerating: boolean;
   error: string | null;
   onGenerate: () => void;
@@ -145,8 +145,9 @@ export const ImageGeneration: React.FC<ImageGenerationProps> = ({ isGPUAvailable
       })
       .catch((err) => {
         if (isMounted) {
+          console.error('Image generation initialization failed', err);
           setStatus('error');
-          setError(err instanceof Error ? err.message : 'Failed to initialize image generation.');
+          setError('Unable to initialize image generation. Please try again later.');
         }
       });
 
@@ -161,7 +162,8 @@ export const ImageGeneration: React.FC<ImageGenerationProps> = ({ isGPUAvailable
     try {
       await imageGenerationService.generate();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate image.');
+      console.error('Image generation failed', err);
+      setError('Image generation failed. Please try again.');
     } finally {
       setIsGenerating(false);
     }

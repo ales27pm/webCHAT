@@ -52,9 +52,14 @@ class ImageGenerationService {
     const tokenizerModule = await import(/* @vite-ignore */ TOKENIZER_MODULE_URL);
     await tokenizerModule.default();
     window.tvmjsGlobalEnv.getTokenizer = async (name: string) => {
+      if (!/^[\w.-]+\/[\w.-]+$/.test(name)) {
+        throw new Error(`Tokenizer name "${name}" is invalid.`);
+      }
       const response = await fetch(`https://huggingface.co/${name}/raw/main/tokenizer.json`);
       if (!response.ok) {
-        throw new Error('Failed to fetch tokenizer');
+        throw new Error(
+          `Failed to fetch tokenizer "${name}" (status ${response.status}).`
+        );
       }
       const jsonText = await response.text();
       return new tokenizerModule.TokenizerWasm(jsonText);
@@ -79,6 +84,7 @@ class ImageGenerationService {
     })().catch((error) => {
       console.error('Failed to initialize image generation', error);
       this.status = 'error';
+      this.initPromise = null;
       throw error;
     });
 
