@@ -1,15 +1,18 @@
 import React from 'react';
+import { jest } from '@jest/globals';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react';
-import { ImageGeneration } from '../components/ImageGeneration';
-import { imageGenerationService } from '../services/imageGenerationService';
 
-jest.mock('../services/imageGenerationService', () => ({
-  imageGenerationService: {
-    getStatus: jest.fn(() => 'ready'),
-    initialize: jest.fn(() => Promise.resolve()),
-    generate: jest.fn(() => Promise.resolve())
-  }
+const mockImageGenerationService = {
+  getStatus: jest.fn(() => 'ready'),
+  initialize: jest.fn(() => Promise.resolve()),
+  generate: jest.fn(() => Promise.resolve())
+};
+
+jest.unstable_mockModule('../services/imageGenerationService', () => ({
+  imageGenerationService: mockImageGenerationService
 }));
+
+const { ImageGeneration } = await import('../components/ImageGeneration');
 
 describe('ImageGeneration', () => {
   it('renders the image generation form and triggers generate', async () => {
@@ -28,7 +31,7 @@ describe('ImageGeneration', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(imageGenerationService.generate).toHaveBeenCalled();
+      expect(mockImageGenerationService.generate).toHaveBeenCalled();
     });
   });
 });

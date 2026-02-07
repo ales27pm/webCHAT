@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="base-path" content="/webCHAT/" />
+    <title>Redirecting...</title>
+    <script>
+      const pathSegments = window.location.pathname.split('/').filter(Boolean);
+      const isGithubPages = window.location.hostname.endsWith('github.io');
+      const metaBasePath = document
+        .querySelector('meta[name="base-path"]')
+        ?.getAttribute('content');
+      const basePath = isGithubPages
+        ? metaBasePath || (pathSegments.length > 1 ? `/${pathSegments[0]}/` : '/')
+        : '/';
+      try {
+        const redirectPath =
+          window.location.pathname + window.location.search + window.location.hash;
+        sessionStorage.setItem('redirect', redirectPath);
+      } catch (error) {
+        console.warn('Unable to access sessionStorage for redirect recovery.', error);
+      } finally {
+        window.location.replace(basePath);
+      }
+    </script>
+  </head>
+  <body>
+    <p>Redirecting…</p>
+  </body>
+</html>

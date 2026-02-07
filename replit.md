@@ -8,7 +8,7 @@ A React-based on-device AI application that runs AI models directly in the brows
 
 - **Framework**: React 19 + TypeScript
 - **Build Tool**: Vite 6
-- **Styling**: Tailwind CSS (via CDN)
+- **Styling**: Tailwind CSS (local build with PostCSS)
 - **AI**: @mlc-ai/web-llm, @xenova/transformers
 - **Testing**: Jest + React Testing Library
 
@@ -30,4 +30,5 @@ A React-based on-device AI application that runs AI models directly in the brows
 ## Recent Changes
 
 - 2026-02-07: Fixed display issues by defining `zinc` colors in Tailwind configuration and ensuring `root` element fills the viewport.
+- 2026-02-07: Moved Tailwind to a local build pipeline to avoid relying on the CDN at runtime.
 - 2026-02-07: Configured Vite for Replit (port 5000, allowedHosts, HMR clientPort).
