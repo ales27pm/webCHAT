@@ -227,9 +227,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div
-      className="flex h-full w-full bg-zinc-950 text-zinc-100 overflow-hidden m-0 p-0 border-0"
-    >
+    <div className="flex h-full w-full bg-zinc-950 text-zinc-100 overflow-hidden m-0 p-0 border-0">
       <Sidebar
         selectedModel={state.selectedModel}
         onModelSelect={handleModelSelect}
